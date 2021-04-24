@@ -1,5 +1,5 @@
 const TOKEN = process.env.TOKEN;
-const HOST = process.env.HOST;
+const HOST = process.env.HOST || "https://manor.anton.royletron.dev";
 const fetch = require("node-fetch");
 
 //The following is just for running on K8s and allows health/ready probes
@@ -70,15 +70,16 @@ const run = async () => {
       let complete = false;
       while (!complete) {
         //We have a game, so loop and get the state
-        const game = await getState(gameId);
-        switch (game.state) {
+        const currentGameState = await getState(gameId);
+        //currentGameState.board = 3x3 array representing state of board.
+        switch (currentGameState.state) {
           //If the game hasn't started we wait
           case "waiting":
             await delay(1500);
             break;
           //If the game is playing we try to make moves
           case "playing":
-            if (game.canPlay) {
+            if (currentGameState.canPlay) {
               await playRandomMove(gameId);
             } else {
               //opponent is playing, lets wait
