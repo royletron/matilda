@@ -1,14 +1,29 @@
 const TOKEN = process.env.TOKEN;
+const HOST = process.env.HOST;
 const fetch = require("node-fetch");
-const HOST = "https://manor-two.vercel.app";
 
+//The following is just for running on K8s and allows health/ready probes
+const App = require("@tinyhttp/app").App;
+
+const app = new App();
+
+app
+  .get("/healthz", (_, res) => {
+    res.send("ok");
+  })
+  .get("/readyz", (req, res) => {
+    res.send("ok");
+  })
+  .listen(3000);
+
+//Useful promise for waiting for a bit....
 const delay = (ms) => {
-  console.log("Delaying for a bit", ms);
   return new Promise((resolve, reject) => {
     setTimeout(resolve, ms);
   });
 };
 
+//Gets a new game from the lobby
 const getGame = () => {
   console.log("Getting a game");
   return fetch(`${HOST}/api/tictactoe/lobby`, {
@@ -20,19 +35,21 @@ const getGame = () => {
   }).then((res) => res.json()); // expecting a json response
 };
 
+//Plays a completely random (possibly illegal) move
 const playRandomMove = (gameId) => {
   console.log("Playing random move", gameId);
   return fetch(`${HOST}/api/tictactoe/${gameId}/play`, {
     method: "POST",
     body: JSON.stringify({
       token: TOKEN,
-      x: Math.floor(Math.random() * 2),
-      y: Math.floor(Math.random() * 2),
+      x: Math.floor(Math.random() * 2.8),
+      y: Math.floor(Math.random() * 2.8),
     }),
     headers: { "Content-Type": "application/json" },
   }).then((res) => res.json()); // expecting a json response
 };
 
+//Gets the state of the current game.
 const getState = (gameId) => {
   return fetch(`${HOST}/api/tictactoe/${gameId}`, {
     method: "POST",
@@ -43,26 +60,43 @@ const getState = (gameId) => {
   }).then((res) => res.json()); // expecting a json response
 };
 
-getGame()
-  .then(async ({ gameId }) => {
-    let complete = false;
-    while (!complete) {
-      const game = await getState(gameId);
-      switch (game.state) {
-        case "waiting":
-          await delay(500);
-          break;
-        case "playing":
-          const response = await playRandomMove(gameId);
-          console.log(response.message);
-          break;
-        default:
-          complete = true;
-          break;
+//A big loop....
+const run = async () => {
+  let errored = false;
+  while (!errored) {
+    try {
+      //The first loop loops through games, if a game errors it stops.
+      const { gameId } = await getGame();
+      let complete = false;
+      while (!complete) {
+        //We have a game, so loop and get the state
+        const game = await getState(gameId);
+        switch (game.state) {
+          //If the game hasn't started we wait
+          case "waiting":
+            await delay(1500);
+            break;
+          //If the game is playing we try to make moves
+          case "playing":
+            if (game.canPlay) {
+              await playRandomMove(gameId);
+            } else {
+              //opponent is playing, lets wait
+              await delay(500);
+            }
+            break;
+          //If the game isn't waiting or playing it must be over..
+          default:
+            complete = true;
+            break;
+        }
       }
+    } catch (error) {
+      console.error(error);
+      errored = true;
+      process.exit(1);
     }
-  })
-  .then(() => console.log("done"))
-  .catch((error) => {
-    console.error(error);
-  });
+  }
+};
+
+run();
