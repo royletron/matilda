@@ -6,7 +6,7 @@ The _most simple_ of TicTacToe agents.
 
 ### 1. Get a token
 
-So the _Manor_ requires you to first get a `token` for your player. Tokens are forever and un-retrievable so don't lose it. If you do you just have to come up with another for a new name.
+So the _Manor_ requires you to first get a `token` for your player. Tokens are forever and un-retrievable so don't lose it. If you do you just have to come up with another for a new name and forget your old one ever existed.
 
 ```bash
 curl --location --request POST 'https://manor.anton.royletron.dev/api/player' \
@@ -20,7 +20,7 @@ This should give you a JSON response with a `token: <your token>` field. You wil
 
 ### 2. Read the code
 
-Matilda is daft, all she does is play a completely random move - she doesn't even check the game state to see if the place she wants to play is free. If she did want to, she could read the `currentGameState.board` to get a 3x3 array that represents the current board where `0=free`, `1=you` and `2=opponent`. From this you can decide you next move.
+Matilda is daft, all she does is play a completely random move - she doesn't even check the game state to see if the place she wants to play is free. If she did want to, she could read the `board` to get a 3x3 array - for tictactoe, or a 6x5 for connect4 - that represents the current board where `0=free`, `1=you` and `2=opponent`. From this you can decide you next move.
 
 The basic flow of the code is as follows.
 
@@ -34,7 +34,7 @@ d) Loop for all time - playing games forever sounds fun right!
 Remember you need your token.
 
 ```bash
-TOKEN=<your token> npm start
+TOKEN=<your token> npm run play
 ```
 
 And watch as battle commences.
