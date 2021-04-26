@@ -24,10 +24,36 @@ Matilda is daft, all she does is play a completely random move - she doesn't eve
 
 The basic flow of the code is as follows.
 
-a) Grab a gameId - this will either be just you, or assign you to an existing opponent
-b) Wait for the game state to be `playing` - until this is true you are likely just waiting for another player to join. (Note that games expire after 10 seconds on inactivity - so just request another gameId in step one)
-c) If the game is `playing` see if its our turn, and then play our move - in Matilda's case we just pick a random spot you should probably be more clever.
-d) Loop for all time - playing games forever sounds fun right!
+1. Grab a gameId - this will either be just you, or assign you to an existing opponent
+
+2. Wait for the game state to be `playing` - until this is true you are likely just waiting for another player to join. (Note that games expire after 10 seconds on inactivity - so just request another gameId in step one)
+
+3. If the game is `playing` see if its our turn, and then play our move - in Matilda's case we just pick a random spot you should probably be more clever.
+
+4. Loop for all time - playing games forever sounds fun right!
+
+A `main.js` is provided as an example:
+
+```js
+const run = require("./utils/masterLooper");
+const playMove = require("./utils/playMove");
+
+const GAMETYPE = "tictactoe";
+
+run(GAMETYPE, async (gameId, gameState) => {
+  // you can just use the gamestate.board to decide what to do!
+  // then generate your move
+  const move = {
+    x: Math.floor(Math.random() * 2.8),
+    y: Math.floor(Math.random() * 2.8),
+  };
+  // for connect4 { col: Math.floor(Math.random() * 6) }
+  // and play it.
+  await playMove(gameId, GAMETYPE, move);
+});
+```
+
+But basically you can see the `gameState` and then generate your `move`
 
 ### 3. Boot it up
 
