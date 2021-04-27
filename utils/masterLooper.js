@@ -1,6 +1,7 @@
 const delay = require("../utils/delay");
 const getGame = require("../utils/getGame");
 const getState = require("../utils/getState");
+const logger = require("../utils/logger");
 
 //A big loop....
 const run = async (gameType, playFunction) => {
@@ -9,7 +10,8 @@ const run = async (gameType, playFunction) => {
     try {
       //The first loop loops through games, if a game errors it stops.
       const { gameId } = await getGame(gameType);
-      console.log(`[${gameId}]: initialized`);
+      logger.info("initialized", gameId);
+
       let complete = false;
       let status = "";
       while (!complete) {
@@ -17,7 +19,7 @@ const run = async (gameType, playFunction) => {
         const currentGameState = await getState(gameId, gameType);
         if (currentGameState.state !== status) {
           status = currentGameState.state;
-          console.log(`[${gameId}]: changed to [${currentGameState.state}]`);
+          logger.info(`changed to [${currentGameState.state}]`, gameId);
         }
         //currentGameState.board = 3x3 array representing state of board.
         switch (currentGameState.state) {
@@ -36,7 +38,7 @@ const run = async (gameType, playFunction) => {
             break;
           //If the game isn't waiting or playing it must be over..
           default:
-            console.log(`[${gameId}]: is now ${currentGameState.state}`);
+            logger.info(`is now [${currentGameState.state}]`, gameId);
             complete = true;
             break;
         }
@@ -47,6 +49,7 @@ const run = async (gameType, playFunction) => {
       process.exit(1);
     }
   }
+  process.exit(1);
 };
 
 module.exports = run;

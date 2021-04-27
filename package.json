@@ -20,6 +20,7 @@
   "homepage": "https://github.com/royletron/matilda#readme",
   "dependencies": {
     "@tinyhttp/app": "^1.2.23",
+    "chalk": "^4.1.1",
     "node-fetch": "^2.6.1"
   }
 }

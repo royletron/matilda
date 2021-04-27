@@ -1,9 +1,10 @@
 const fetch = require("node-fetch");
 const config = require("./config");
+const logger = require("./logger");
 
 //Gets a new game from the lobby
 const getGame = (game = "tictactoe") => {
-  console.log("INITIALISING NEW GAME");
+  logger.message("INITIALISING NEW GAME");
   return fetch(`${config.HOST}/api/${game}/lobby`, {
     method: "POST",
     body: JSON.stringify({
